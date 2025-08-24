@@ -48,7 +48,3 @@ python train.py --config-name=${config_name}.yaml \
                             exp_name=${exp_name} \
                             logging.mode=${wandb_mode} \
                             checkpoint.save_ckpt=${save_ckpt}
-
-
-
-                                

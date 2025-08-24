@@ -9,7 +9,7 @@ from diffusion_policy_3d.common.sampler import (
 from diffusion_policy_3d.model.common.normalizer import LinearNormalizer, SingleFieldLinearNormalizer
 from diffusion_policy_3d.dataset.base_dataset import BaseDataset
 
-class RealDexDataset(BaseDataset):
+class DiscoverseDataset(BaseDataset):
     def __init__(self,
             zarr_path, 
             horizon=1,
@@ -23,7 +23,7 @@ class RealDexDataset(BaseDataset):
         super().__init__()
         self.task_name = task_name
         self.replay_buffer = ReplayBuffer.copy_from_path(
-            zarr_path, keys=['state', 'action', 'point_cloud', 'img'])
+            zarr_path, keys=['state', 'action', 'point_cloud'])
         val_mask = get_val_mask(
             n_episodes=self.replay_buffer.n_episodes, 
             val_ratio=val_ratio,
@@ -65,7 +65,6 @@ class RealDexDataset(BaseDataset):
         }
         normalizer = LinearNormalizer()
         normalizer.fit(data=data, last_n_dims=1, mode=mode, **kwargs)
-        # normalizer['point_cloud'] = SingleFieldLinearNormalizer.create_identity()
         return normalizer
 
     def __len__(self) -> int:
@@ -89,3 +88,4 @@ class RealDexDataset(BaseDataset):
         data = self._sample_to_data(sample)
         torch_data = dict_apply(data, torch.from_numpy)
         return torch_data
+

@@ -1,7 +1,7 @@
 from typing import Dict, Callable, List
 import collections
 import torch
-import torch.nn as nn
+
 
 def dict_apply(
         x: Dict[str, torch.Tensor], 

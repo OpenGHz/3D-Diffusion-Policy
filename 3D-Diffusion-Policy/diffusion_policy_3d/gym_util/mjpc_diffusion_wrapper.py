@@ -54,6 +54,17 @@ ENV_POINT_CLOUD_CONFIG = {
         'offset': np.array([0, 0, 0.]),
     },
 
+    'discoverse_lift_block': {
+        # 'min_bound': [-10, -10, -0.099],
+        # 'max_bound': [10, 10, 10],
+        'num_points': 512,
+        'point_sampling_method': 'fps',
+        'cam_names':['top'],
+        # 'transform': ADROIT_PC_TRANSFORM,
+        # 'scale': np.array([1, 1, 1]),
+        # 'offset': np.array([0, 0, 1.]),
+    },
+
 }
 
 def point_cloud_sampling(point_cloud:np.ndarray, num_points:int, method:str='uniform'):

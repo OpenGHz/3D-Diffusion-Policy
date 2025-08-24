@@ -221,7 +221,10 @@ class ReplayBuffer:
         if backend == 'numpy':
             print('backend argument is deprecated!')
             store = None
-        group = zarr.open(os.path.expanduser(zarr_path), 'r')
+        zarr_path = os.path.abspath(os.path.expanduser(zarr_path))
+        if not os.path.exists(zarr_path):
+            raise FileNotFoundError(f"{zarr_path} not found")
+        group = zarr.open(zarr_path, 'r')
         return cls.copy_from_store(src_store=group.store, store=store, 
             keys=keys, chunks=chunks, compressors=compressors, 
             if_exists=if_exists, **kwargs)
