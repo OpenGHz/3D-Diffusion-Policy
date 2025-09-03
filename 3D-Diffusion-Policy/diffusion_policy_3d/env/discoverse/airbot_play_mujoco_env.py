@@ -1,7 +1,7 @@
 import importlib
-import time
 from discoverse.robots_env.airbot_play_base import AirbotPlayCfg
 from discoverse.task_base import AirbotPlayTaskBase
+import numpy as np
 
 
 class MujocoEnv(object):
@@ -16,60 +16,36 @@ class MujocoEnv(object):
         cfg: AirbotPlayCfg = getattr(module, "cfg")
         cfg.headless = False
         self.exec_node: AirbotPlayTaskBase = node_cls(cfg)
-        # self.exec_node.cam_id = self.exec_node.config.obs_camera_id
         self.reset_position = None
         print("MujocoEnv initialized")
 
-    def reset(self, fake=False, sleep_time=0):
+    def _process_raw_obs(self, raw_obs: dict) -> dict:
+        obs = {}
+        obs["agent_pos"] = np.array(raw_obs["jq"])
+        for id in self.exec_node.config.obs_rgb_cam_id:
+            obs[f"cam_{id}"] = raw_obs["img"][id][:, :, ::-1]
+        # choose camera 1 xyz data
+        obs["point_cloud"] = np.hstack(raw_obs["point_cloud"][1])
+        return obs
+
+    def reset(self) -> dict:
         self.exec_node.domain_randomization()
         raw_obs = self.exec_node.reset()
-        # if self.reset_position is not None:
-        #     # self.reset_position[-1] = 0.96
-        #     # print("Resetting to the given position: ", self.reset_position)
-        #     self.reset_position[-1] = 0.04  # undo the normalization
-        #     self.exec_node.mj_data.ctrl[:7] = self.reset_position
-        #     self.exec_node.mj_data.ctrl[7] = -self.exec_node.mj_data.ctrl[6]
-        #     self.exec_node.mj_data.qpos[:7] = self.reset_position
-        #     self.exec_node.mj_data.qpos[7] = -self.exec_node.mj_data.qpos[6]
-        #     raw_obs, pri_obs, rew, ter, info = self.exec_node.step(self.reset_position)
-        time.sleep(sleep_time)
-        obs = {}
-        obs["qpos"] = list(raw_obs["jq"])
-        # print("obs gripper", raw_obs["jq"][-1])
-        # print("pre_obs", obs["qpos"])
-        # obs["qpos"][-1] *= 25  # undo the normalization
-        # print("post_obs", obs["qpos"])
-        # obs["qvel"] = raw_obs["jv"]
-        # obs["images"] = {}
-        # for id in self.exec_node.config.obs_rgb_cam_id:
-        #     obs["images"][f"cam_{id}"] = raw_obs["img"][id][:, :, ::-1]
-        return obs
+        return self._process_raw_obs(raw_obs)
 
     def step(
         self,
         action,
-        get_obs=True,
-        sleep_time=0,
-    ):
+    ) -> dict:
         raw_obs, pri_obs, rew, ter, info = self.exec_node.step(action)
-        time.sleep(sleep_time)
-
-        if get_obs:
-            obs = collections.OrderedDict()
-            obs["qpos"] = list(raw_obs["jq"])
-            obs["images"] = {}
-            for id in self.exec_node.config.obs_rgb_cam_id:
-                obs["images"][f"cam_{id}"] = raw_obs["img"][id][:, :, ::-1]
-        else:
-            obs = None
-        return dm_env.TimeStep(
-            step_type=dm_env.StepType.MID,
-            reward=self.get_reward(),
-            discount=None,
-            observation=obs,
-        )
+        return self._process_raw_obs(raw_obs)
 
 
-def make_env(path):
-    env = MujocoEnv(path)
-    return env
+if __name__ == "__main__":
+    env = MujocoEnv("discoverse/examples/tasks_airbot_play/lift_block.py")
+    obs = env.reset()
+    print(obs.keys())
+    for key, value in obs.items():
+        print(key)
+        print(value.shape)
+    # pprint(obs)

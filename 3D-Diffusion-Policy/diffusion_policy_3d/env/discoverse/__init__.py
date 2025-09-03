@@ -1,1 +1,1 @@
-from .discoverse import DiscoverseEnv
+from .discoverse_env import DiscoverseEnv
