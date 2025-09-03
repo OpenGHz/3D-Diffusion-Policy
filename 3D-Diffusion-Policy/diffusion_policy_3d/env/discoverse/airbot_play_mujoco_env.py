@@ -16,6 +16,7 @@ class MujocoEnv(object):
         cfg: AirbotPlayCfg = getattr(module, "cfg")
         cfg.headless = False
         self.exec_node: AirbotPlayTaskBase = node_cls(cfg)
+        self.exec_node.camera_pose_random = True
         self.reset_position = None
         print("MujocoEnv initialized")
 
