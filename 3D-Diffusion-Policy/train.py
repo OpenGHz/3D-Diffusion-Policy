@@ -360,7 +360,7 @@ class TrainDP3Workspace:
       
         cprint(f"---------------- Eval Results --------------", 'magenta')
         for key, value in runner_log.items():
-            if isinstance(value, float):
+            if isinstance(value, (float, int)):
                 cprint(f"{key}: {value:.4f}", 'magenta')
         
     @property

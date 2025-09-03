@@ -36,9 +36,15 @@ class MujocoEnv(object):
     def step(
         self,
         action,
-    ) -> dict:
-        raw_obs, pri_obs, rew, ter, info = self.exec_node.step(action)
-        return self._process_raw_obs(raw_obs)
+    ) -> tuple:
+        raw_obs, pri_obs, reward, done, info = self.exec_node.step(action)
+        success = self.exec_node.check_success()
+        reward = 0.0
+        if success:
+            reward = 1.0
+            done = True
+        info.update({"goal_achieved": success})
+        return self._process_raw_obs(raw_obs), reward, done, info
 
 
 if __name__ == "__main__":

@@ -70,7 +70,7 @@ class DiscoverseEnv(gym.Env):
         super(DiscoverseEnv, self).__init__()
         self._env = MujocoEnv(f"discoverse/examples/tasks_airbot_play/{task_name}.py")
         self.device_id = int(device.split(":")[-1])
-
+        self._reset_times = 0
         self.image_size = 128
 
         self.use_point_crop = use_point_crop
@@ -155,18 +155,20 @@ class DiscoverseEnv(gym.Env):
         return obs_dict
 
     def step(self, action: np.ndarray):
-        obs = self._env.step(action)
+        obs, reward, done, env_info = self._env.step(action)
         self.cur_step += 1
-
-        done = False
-        reward = 0.0
-        env_info = {"goal_achieved": False}
         done = done or self.cur_step >= self.episode_length
-
+        if done:
+            if reward > 0:
+                print("task success!")
+            else:
+                print("task failed!")
         return self._process_obs(obs), reward, done, env_info
 
     def reset(self):
         self.cur_step = 0
+        self._reset_times += 1
+        print(f"episode: {self._reset_times}")
         return self._process_obs(self._env.reset())
 
     def seed(self, seed=None):

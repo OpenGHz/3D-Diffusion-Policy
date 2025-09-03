@@ -71,6 +71,9 @@ class DiscoverseRunner(BaseRunner):
         all_goal_achieved = []
         all_success_rates = []
 
+        success_cnt = 0
+        fail_cnt = 0
+
         for episode_idx in tqdm.tqdm(
             range(self.eval_episodes),
             desc=f"Eval in Discoverse {self.task_name} Pointcloud Env",
@@ -84,6 +87,7 @@ class DiscoverseRunner(BaseRunner):
             done = False
             num_goal_achieved = 0
             actual_step_count = 0
+
             while not done:
                 # create obs dict
                 np_obs_dict = dict(obs)
@@ -108,16 +112,22 @@ class DiscoverseRunner(BaseRunner):
                 # step env
                 obs, reward, done, info = env.step(action)
                 # all_goal_achieved.append(info['goal_achieved']
-                num_goal_achieved += np.sum(info["goal_achieved"])
+                success = np.sum(info["goal_achieved"])
+                num_goal_achieved += success
                 done = np.all(done)
                 actual_step_count += 1
-
+            # print(success)
+            if success:
+                success_cnt += 1
+            else:
+                fail_cnt += 1
             all_success_rates.append(info["goal_achieved"])
             all_goal_achieved.append(num_goal_achieved)
 
         # log
         log_data = dict()
-
+        log_data["success cnt"] = success_cnt
+        log_data["fail cnt"] = fail_cnt
         log_data["mean_n_goal_achieved"] = np.mean(all_goal_achieved)
         log_data["mean_success_rates"] = np.mean(all_success_rates)
 
